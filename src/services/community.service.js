@@ -69,6 +69,19 @@ export const joinCommunity = async (communityId, userId, username) => {
   return community;
 };
 
+// ─── Get MyCommunities (user jis communities me joined hai)
+export const getMyCommunitites = async (userId) => {
+  const communities = await Community.find({
+    "members.userId": userId,
+    isActive: true,
+  })
+    .select("-__v")
+    .sort({ lastMessageAt: -1, createdAt: -1 })
+    .lean();
+
+  return communities;
+};
+
 // ─── Leave Community
 export const leaveCommunity = async (communityId, userId) => {
   const community = await Community.findById(communityId);

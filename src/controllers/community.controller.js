@@ -20,6 +20,20 @@ export const createCommunity = async (req, res) => {
   }
 };
 
+// ─── Get My Communities
+export const getMyCommunitites = async (req, res) => {
+  try {
+    const communities = await communityService.getMyCommunitites(req.user.sub);
+    return success(res, { communities }, "My communities fetched successfully");
+  } catch (err) {
+    logger.error("Get my communities error:", {
+      message: err.message,
+      stack: err.stack,
+    });
+    return error(res, err.message, err.status || 500);
+  }
+};
+
 // ─── Join Community
 export const joinCommunity = async (req, res) => {
   try {

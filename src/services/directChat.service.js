@@ -179,7 +179,7 @@ export const getChatHistory = async (chatId, userId, page = 1, limit = 50) => {
   };
 };
 
-// ─── Get All Chats of User ────────────────────────────────────────────────────
+// ─── Get All Chats of User 
 export const getUserChats = async (userId) => {
   const chats = await DirectChat.find({
     "participants.userId": userId,
@@ -191,7 +191,7 @@ export const getUserChats = async (userId) => {
   return chats;
 };
 
-// ─── Get Pending Requests ─────────────────────────────────────────────────────
+// ─── Get Pending Requests 
 export const getPendingRequests = async (userId) => {
   const requests = await DirectChat.find({
     "participants.userId": userId,
