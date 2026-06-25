@@ -1,5 +1,4 @@
 export const communitySwaggerDocs = {
-
   "/api/community": {
     post: {
       summary: "Create a new community",
@@ -13,10 +12,13 @@ export const communitySwaggerDocs = {
               type: "object",
               required: ["name", "city"],
               properties: {
-                name:        { type: "string",  example: "Delhi Commuters" },
-                description: { type: "string",  example: "Daily commuters from Delhi to Noida" },
-                city:        { type: "string",  example: "Delhi" },
-                isPrivate:   { type: "boolean", example: false },
+                name: { type: "string", example: "Delhi Commuters" },
+                description: {
+                  type: "string",
+                  example: "Daily commuters from Delhi to Noida",
+                },
+                city: { type: "string", example: "Delhi" },
+                isPrivate: { type: "boolean", example: false },
               },
             },
           },
@@ -30,16 +32,40 @@ export const communitySwaggerDocs = {
     },
   },
 
+  "/api/community/my-communities": {
+    get: {
+      summary: "Get all communities joined by current user",
+      tags: ["Community"],
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: { description: "My communities fetched successfully" },
+        401: { description: "Unauthorized" },
+      },
+    },
+  },
+
   "/api/community/search": {
     get: {
       summary: "Search communities by city or name",
       tags: ["Community"],
       security: [{ bearerAuth: [] }],
       parameters: [
-        { name: "city",   in: "query", schema: { type: "string", example: "Delhi" } },
-        { name: "search", in: "query", schema: { type: "string", example: "commuters" } },
-        { name: "page",   in: "query", schema: { type: "integer", example: 1 } },
-        { name: "limit",  in: "query", schema: { type: "integer", example: 20 } },
+        {
+          name: "city",
+          in: "query",
+          schema: { type: "string", example: "Delhi" },
+        },
+        {
+          name: "search",
+          in: "query",
+          schema: { type: "string", example: "commuters" },
+        },
+        { name: "page", in: "query", schema: { type: "integer", example: 1 } },
+        {
+          name: "limit",
+          in: "query",
+          schema: { type: "integer", example: 20 },
+        },
       ],
       responses: {
         200: { description: "Communities fetched successfully" },
@@ -55,7 +81,9 @@ export const communitySwaggerDocs = {
       security: [{ bearerAuth: [] }],
       parameters: [
         {
-          name: "communityId", in: "path", required: true,
+          name: "communityId",
+          in: "path",
+          required: true,
           schema: { type: "string", example: "6a34aa15f585c7dfc43336a4" },
         },
       ],
@@ -71,7 +99,9 @@ export const communitySwaggerDocs = {
       security: [{ bearerAuth: [] }],
       parameters: [
         {
-          name: "communityId", in: "path", required: true,
+          name: "communityId",
+          in: "path",
+          required: true,
           schema: { type: "string", example: "6a34aa15f585c7dfc43336a4" },
         },
       ],
@@ -90,7 +120,9 @@ export const communitySwaggerDocs = {
       security: [{ bearerAuth: [] }],
       parameters: [
         {
-          name: "communityId", in: "path", required: true,
+          name: "communityId",
+          in: "path",
+          required: true,
           schema: { type: "string", example: "6a34aa15f585c7dfc43336a4" },
         },
       ],
@@ -109,7 +141,9 @@ export const communitySwaggerDocs = {
       security: [{ bearerAuth: [] }],
       parameters: [
         {
-          name: "communityId", in: "path", required: true,
+          name: "communityId",
+          in: "path",
+          required: true,
           schema: { type: "string", example: "6a34aa15f585c7dfc43336a4" },
         },
       ],
@@ -127,11 +161,17 @@ export const communitySwaggerDocs = {
       security: [{ bearerAuth: [] }],
       parameters: [
         {
-          name: "communityId", in: "path", required: true,
+          name: "communityId",
+          in: "path",
+          required: true,
           schema: { type: "string", example: "6a34aa15f585c7dfc43336a4" },
         },
-        { name: "page",  in: "query", schema: { type: "integer", example: 1 } },
-        { name: "limit", in: "query", schema: { type: "integer", example: 50 } },
+        { name: "page", in: "query", schema: { type: "integer", example: 1 } },
+        {
+          name: "limit",
+          in: "query",
+          schema: { type: "integer", example: 50 },
+        },
       ],
       responses: {
         200: { description: "Messages fetched successfully" },
