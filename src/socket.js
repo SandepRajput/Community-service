@@ -1,13 +1,13 @@
-import { Server } from 'socket.io';
-import jwt from 'jsonwebtoken';
-import * as directChatService from './services/directChat.service.js';
-import * as communityService from './services/community.service.js';
-import logger from './utils/logger.js';
+import { Server } from "socket.io";
+import jwt from "jsonwebtoken";
+import * as directChatService from "./services/directChat.service.js";
+import * as communityService from "./services/community.service.js";
+import logger from "./utils/logger.js";
 
 const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin:      process.env.ALLOWED_ORIGINS?.split(',') || '*',
+      origin: process.env.ALLOWED_ORIGINS?.split(",") || "*",
       credentials: true,
     },
   });
@@ -15,45 +15,46 @@ const initSocket = (httpServer) => {
   // ─── Auth Middleware
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth?.token || socket.handshake.query?.auth;
-      if (!token) return next(new Error('No token provided'));
+      const token =
+        socket.handshake.auth?.token || socket.handshake.query?.auth;
+      if (!token) return next(new Error("No token provided"));
 
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, {
-        issuer:   'cab-auth-service',
-        audience: 'cab-app',
+        issuer: "cab-auth-service",
+        audience: "cab-app",
       });
 
       socket.user = decoded;
       next();
     } catch (err) {
-      next(new Error('Authentication failed'));
+      next(new Error("Authentication failed"));
     }
   });
 
   // ─── Connection
-  io.on('connection', (socket) => {
+  io.on("connection", (socket) => {
     logger.info(`User connected: ${socket.user.username}`);
 
     // ════════════════════════════════════════════════════════════════════════
     // LAYER 1 — Direct Chat
     // ════════════════════════════════════════════════════════════════════════
 
-    // ─── Join Direct Chat Room 
-    socket.on('join_direct_chat', async (chatId) => {
+    // ─── Join Direct Chat Room
+    socket.on("join_direct_chat", async (chatId) => {
       try {
         socket.join(`direct_${chatId}`);
         logger.info(`${socket.user.username} joined direct chat: ${chatId}`);
       } catch (err) {
-        socket.emit('error', { message: err.message });
+        socket.emit("error", { message: err.message });
       }
     });
 
-    // ─── Send Direct Message 
-    socket.on('send_direct_message', async ({ chatId, message }) => {
+    // ─── Send Direct Message
+    socket.on("send_direct_message", async ({ chatId, message }) => {
       try {
         if (!message?.trim()) return;
         if (message.length > 500) {
-          socket.emit('error', { message: 'Message too long (max 500 chars)' });
+          socket.emit("error", { message: "Message too long (max 500 chars)" });
           return;
         }
 
@@ -61,36 +62,35 @@ const initSocket = (httpServer) => {
           chatId,
           socket.user.sub,
           socket.user.username,
-          message.trim()
+          message.trim(),
         );
 
         // Room me dono users ko bhejo
-        io.to(`direct_${chatId}`).emit('new_direct_message', {
-          messageId:      savedMsg._id,
+        io.to(`direct_${chatId}`).emit("new_direct_message", {
+          messageId: savedMsg._id,
           chatId,
-          senderId:       socket.user.sub,
+          senderId: socket.user.sub,
           senderUsername: socket.user.username,
-          message:        savedMsg.message,
-          timestamp:      savedMsg.createdAt,
+          message: savedMsg.message,
+          timestamp: savedMsg.createdAt,
         });
-
       } catch (err) {
-        logger.error('Send direct message error:', err.message);
-        socket.emit('error', { message: err.message });
+        logger.error("Send direct message error:", err.message);
+        socket.emit("error", { message: err.message });
       }
     });
 
-    // ─── Typing Indicator (Direct) 
-    socket.on('direct_typing', ({ chatId, isTyping }) => {
-      socket.to(`direct_${chatId}`).emit('direct_user_typing', {
-        userId:   socket.user.sub,
+    // ─── Typing Indicator (Direct)
+    socket.on("direct_typing", ({ chatId, isTyping }) => {
+      socket.to(`direct_${chatId}`).emit("direct_user_typing", {
+        userId: socket.user.sub,
         username: socket.user.username,
         isTyping,
       });
     });
 
     // ─── Leave Direct Chat
-    socket.on('leave_direct_chat', (chatId) => {
+    socket.on("leave_direct_chat", (chatId) => {
       socket.leave(`direct_${chatId}`);
       logger.info(`${socket.user.username} left direct chat: ${chatId}`);
     });
@@ -99,17 +99,19 @@ const initSocket = (httpServer) => {
     // LAYER 2 — Community Chat
     // ════════════════════════════════════════════════════════════════════════
 
-    // ─── Join Community Room 
-    socket.on('join_community', async (communityId) => {
+    // ─── Join Community Room
+    socket.on("join_community", async (communityId) => {
       try {
         const community = await communityService.getCommunity(communityId);
 
         // Check member hai
         const isMember = community.members.find(
-          (m) => m.userId.toString() === socket.user.sub
+          (m) => m.userId.toString() === socket.user.sub,
         );
         if (!isMember) {
-          socket.emit('error', { message: 'You are not a member of this community' });
+          socket.emit("error", {
+            message: "You are not a member of this community",
+          });
           return;
         }
 
@@ -119,26 +121,25 @@ const initSocket = (httpServer) => {
         // System message
         const sysMsg = await communityService.saveSystemMessage(
           communityId,
-          `${socket.user.username} joined the community`
+          `${socket.user.username} joined the community`,
         );
 
-        io.to(`community_${communityId}`).emit('community_system_message', {
-          message:   sysMsg.message,
+        io.to(`community_${communityId}`).emit("community_system_message", {
+          message: sysMsg.message,
           timestamp: sysMsg.createdAt,
         });
-
       } catch (err) {
-        logger.error('Join community error:', err.message);
-        socket.emit('error', { message: err.message });
+        logger.error("Join community error:", err.message);
+        socket.emit("error", { message: err.message });
       }
     });
 
-    // ─── Send Community Message 
-    socket.on('send_community_message', async ({ communityId, message }) => {
+    // ─── Send Community Message
+    socket.on("send_community_message", async ({ communityId, message }) => {
       try {
         if (!message?.trim()) return;
         if (message.length > 500) {
-          socket.emit('error', { message: 'Message too long (max 500 chars)' });
+          socket.emit("error", { message: "Message too long (max 500 chars)" });
           return;
         }
 
@@ -146,56 +147,56 @@ const initSocket = (httpServer) => {
           communityId,
           socket.user.sub,
           socket.user.username,
-          message.trim()
+          message.trim(),
         );
 
         // Sab community members ko bhejo
-        io.to(`community_${communityId}`).emit('new_community_message', {
-          messageId:      savedMsg._id,
+        io.to(`community_${communityId}`).emit("new_community_message", {
+          messageId: savedMsg._id,
           communityId,
-          senderId:       socket.user.sub,
+          senderId: socket.user.sub,
           senderUsername: socket.user.username,
-          message:        savedMsg.message,
-          timestamp:      savedMsg.createdAt,
+          message: savedMsg.message,
+          timestamp: savedMsg.createdAt,
         });
-
       } catch (err) {
-        logger.error('Send community message error:', err.message);
-        socket.emit('error', { message: err.message });
+        logger.error("Send community message error:", err.message);
+        socket.emit("error", { message: err.message });
       }
     });
 
     // ─── Typing Indicator (Community)
-    socket.on('community_typing', ({ communityId, isTyping }) => {
-      socket.to(`community_${communityId}`).emit('community_user_typing', {
-        userId:   socket.user.sub,
+    socket.on("community_typing", ({ communityId, isTyping }) => {
+      socket.to(`community_${communityId}`).emit("community_user_typing", {
+        communityId, // added
+        userId: socket.user.sub,
         username: socket.user.username,
         isTyping,
       });
     });
 
-    // ─── Leave Community Room 
-    socket.on('leave_community', async (communityId) => {
+    // ─── Leave Community Room
+    socket.on("leave_community", async (communityId) => {
       try {
         socket.leave(`community_${communityId}`);
         logger.info(`${socket.user.username} left community: ${communityId}`);
 
         const sysMsg = await communityService.saveSystemMessage(
           communityId,
-          `${socket.user.username} left the community`
+          `${socket.user.username} left the community`,
         );
 
-        socket.to(`community_${communityId}`).emit('community_system_message', {
-          message:   sysMsg.message,
+        socket.to(`community_${communityId}`).emit("community_system_message", {
+          message: sysMsg.message,
           timestamp: sysMsg.createdAt,
         });
       } catch (err) {
-        logger.error('Leave community error:', err.message);
+        logger.error("Leave community error:", err.message);
       }
     });
 
     // ─── Disconnect
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
       logger.info(`User disconnected: ${socket.user.username}`);
     });
   });
