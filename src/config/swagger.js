@@ -1,5 +1,6 @@
 import { communitySwaggerDocs } from '../docs/community.swagger.js';
 import { directChatSwaggerDocs } from '../docs/directChat.swagger.js';
+import { notificationSwaggerDocs } from '../docs/notification.swagger.js';
 
 const swaggerSpec = {
   openapi: '3.0.0',
@@ -26,6 +27,7 @@ const swaggerSpec = {
   paths: {
     ...communitySwaggerDocs,
     ...directChatSwaggerDocs,
+    ...notificationSwaggerDocs,
   },
 };
 

@@ -7,6 +7,7 @@ import directChatRoutes from "./src/routes/directChat.routes.js";
 import communityRoutes from "./src/routes/community.routes.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./src/config/swagger.js";
+import notificationRoutes from "./src/routes/notification.routes.js";
 
 const app = express();
 
@@ -30,6 +31,8 @@ app.use("/api/direct-chat", directChatRoutes);
 app.use("/api/community", communityRoutes);
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.use("/api/notifications", notificationRoutes);
 
 // ─── Health Check ───────
 app.get("/health", (_req, res) => {

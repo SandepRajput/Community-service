@@ -12,7 +12,7 @@ const router = Router();
 
 // ─── Direct Chat Routes
 router.post("/request", protect, sendChatRequest);
-router.patch("/request/:chatId", protect, respondToChatRequest);
+router.patch("/request/:chatId", protect, respondToChatRequest); //request bhejra h uski id and recived user id
 router.get("/history/:chatId", protect, getChatHistory);
 router.get("/my-chats", protect, getUserChats);
 router.get("/pending-requests", protect, getPendingRequests);
