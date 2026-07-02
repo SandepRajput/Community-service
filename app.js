@@ -32,7 +32,7 @@ app.use("/api/community", communityRoutes);
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use("/api/notifications", notificationRoutes);
+app.use("/api/community/notifications", notificationRoutes);
 
 // ─── Health Check ───────
 app.get("/health", (_req, res) => {
